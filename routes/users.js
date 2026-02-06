@@ -65,26 +65,26 @@ router.put("/:email", (req, res) => {
     // Extract email parameter and find users with matching email
     const email = req.params.email;
     let filtered_users = users.filter((user) => user.email === email);
-    
+
     if (filtered_users.length > 0) {
         // Select the first matching user and update attributes if provided
         let filtered_user = filtered_users[0];
-        
+
          // Extract and update DOB if provided
-        
-        let DOB = req.query.DOB;    
+
+        let DOB = req.query.DOB;
         if (DOB) {
             filtered_user.DOB = DOB;
         }
-        
+
         /*
         Include similar code here for updating other attributes as needed
         */
-        
+
         // Replace old user entry with updated user
         users = users.filter((user) => user.email != email);
         users.push(filtered_user);
-        
+
         // Send success message indicating the user has been updated
         res.send(`User with the email ${email} updated.`);
     } else {
