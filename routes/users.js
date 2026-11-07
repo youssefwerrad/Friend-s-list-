@@ -38,16 +38,6 @@ router.get("/lastName/:lastName", (req, res) => {
     res.send(filtered_lastname);
 });
 
-router.get("/:email",(req,res)=>{
-    // Extract the email parameter from the request URL
-    const email = req.params.email;
-    // Filter the users array to find users whose email matches the extracted email parameter
-    let filtered_users = users.filter((user) => user.email === email);
-    // Send the filtered_users array as the response to the client
-    res.send(filtered_users);
-});
-
-
 router.post("/",(req,res)=>{
     // Push a new user object into the users array based on query parameters from the request
     users.push({
@@ -109,6 +99,15 @@ router.get("/sort", (req, res) => {
     });
     // Send the sorted_users array as the response to the client
     res.send(sorted_users);
+});
+
+router.get("/:email",(req,res)=>{
+    // Extract the email parameter from the request URL
+    const email = req.params.email;
+    // Filter the users array to find users whose email matches the extracted email parameter
+    let filtered_users = users.filter((user) => user.email === email);
+    // Send the filtered_users array as the response to the client
+    res.send(filtered_users);
 });
 
 router.delete("/:email", (req, res) => {

@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#183c31">
+    <title>Friends — People you know, all in one place</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --ink: #20352d;
+            --muted: #718078;
+            --green: #21483b;
+            --green-dark: #183c31;
+            --paper: #f5f4ed;
+            --surface: #fffefa;
+            --line: #e7e6dc;
+            --orange: #d5835e;
+            --danger: #a64e43;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            margin: 0;
+            background: radial-gradient(ellipse at 92% 5%, rgba(213, 131, 94, .09), transparent 25rem), var(--paper);
+            color: var(--ink);
+        }
+        button, input, select { font: inherit; }
+        button { cursor: pointer; }
+        .shell { max-width: 1320px; margin: 0 auto; padding: 0 36px; }
+        .topbar {
+            position: sticky;
+            z-index: 3;
+            top: 0;
+            border-bottom: 1px solid rgba(32, 53, 45, .08);
+            background: rgba(255, 254, 250, .91);
+            backdrop-filter: blur(14px);
+        }
+        .topbar-inner { display: flex; min-height: 74px; align-items: center; justify-content: space-between; gap: 20px; }
+        .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; }
+        .brand-mark {
+            display: grid;
+            width: 40px;
+            height: 40px;
+            place-items: center;
+            border-radius: 13px;
+            background: var(--green);
+            color: white;
+            font-size: 19px;
+        }
+        .brand-name { font-family: Georgia, "Times New Roman", serif; font-size: 21px; font-weight: 700; letter-spacing: -.5px; }
+        .brand-caption { margin-top: 1px; color: var(--muted); font-size: 11px; }
+        .button {
+            display: inline-flex;
+            min-height: 42px;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 17px;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            background: var(--green);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+        }
+        .button:hover { transform: translateY(-1px); background: var(--green-dark); box-shadow: 0 5px 14px rgba(24, 60, 49, .15); }
+        .button.secondary { border-color: var(--line); background: var(--surface); color: var(--green); }
+        .button.secondary:hover { background: #f1f3eb; box-shadow: none; }
+        .button.danger { background: #f7eeeb; color: var(--danger); }
+        .button.danger:hover { background: #f3e2dd; box-shadow: none; }
+        .button.small { min-height: 34px; padding: 0 12px; font-size: 12px; }
+        main { padding: 34px 0 70px; }
+        .hero {
+            position: relative;
+            display: flex;
+            min-height: 236px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 28px;
+            overflow: hidden;
+            padding: 38px 44px;
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at 81% 20%, rgba(235, 190, 148, .2), transparent 18rem),
+                linear-gradient(115deg, #183c31, #315c49);
+            color: #fffefa;
+            box-shadow: 0 18px 40px rgba(24, 60, 49, .12);
+        }
+        .hero::after {
+            position: absolute;
+            top: -105px;
+            right: 12%;
+            width: 290px;
+            height: 440px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 50%;
+            content: "";
+            transform: rotate(28deg);
+            pointer-events: none;
+        }
+        .eyebrow { margin: 0 0 12px; color: #edbd9e; font-size: 11px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; }
+        h1 { max-width: 620px; margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(36px, 5vw, 58px); font-weight: 500; letter-spacing: -1.7px; line-height: 1.03; }
+        .hero p:last-child { max-width: 520px; margin: 14px 0 0; color: rgba(255,254,250,.75); font-size: 15px; line-height: 1.7; }
+        .hero .button { z-index: 1; flex: 0 0 auto; align-self: flex-end; background: #f0c49f; color: #263d32; }
+        .hero .button:hover { background: #f6d2b2; }
+        .toolbar { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin: 34px 0 19px; }
+        .section-title { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 27px; letter-spacing: -.4px; }
+        .section-note { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+        .controls { display: flex; align-items: center; gap: 10px; }
+        .searchbox { position: relative; }
+        .searchbox span { position: absolute; top: 50%; left: 13px; color: #78837b; transform: translateY(-50%); pointer-events: none; }
+        .searchbox input { width: min(260px, 27vw); padding-left: 37px; }
+        .field, select {
+            min-height: 42px;
+            padding: 0 12px;
+            border: 1px solid #dedfd5;
+            border-radius: 10px;
+            outline: 0;
+            background: var(--surface);
+            color: var(--ink);
+            font-size: 13px;
+        }
+        .field:focus, select:focus { border-color: #70917e; box-shadow: 0 0 0 3px rgba(65, 111, 84, .12); }
+        .friend-count { margin: 0 0 15px; color: var(--muted); font-size: 12px; }
+        .friend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+        .friend-card {
+            min-width: 0;
+            padding: 21px;
+            border: 1px solid var(--line);
+            border-radius: 17px;
+            background: var(--surface);
+            box-shadow: 0 6px 20px rgba(32, 53, 45, .035);
+            transition: transform .17s ease, box-shadow .17s ease, border-color .17s ease;
+        }
+        .friend-card:hover { transform: translateY(-2px); border-color: #d6d7c9; box-shadow: 0 12px 26px rgba(32, 53, 45, .075); }
+        .card-top { display: flex; align-items: center; gap: 13px; }
+        .avatar {
+            display: grid;
+            width: 48px;
+            height: 48px;
+            flex: 0 0 auto;
+            place-items: center;
+            border: 1px solid #e6e9df;
+            border-radius: 16px;
+            background: #edf1e9;
+            color: var(--green);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .friend-name { overflow: hidden; margin: 0; color: #23392f; font-family: Georgia, "Times New Roman", serif; font-size: 20px; text-overflow: ellipsis; white-space: nowrap; }
+        .friend-email { overflow: hidden; margin: 4px 0 0; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+        .card-divider { height: 1px; margin: 18px 0 14px; background: #eeede6; }
+        .dob-label { color: #929a91; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+        .dob { margin-top: 4px; color: #46564d; font-size: 13px; font-weight: 600; }
+        .card-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 15px; }
+        .notice { padding: 35px 20px; border: 1px dashed #dedfd4; border-radius: 15px; background: rgba(255,254,250,.66); color: var(--muted); text-align: center; }
+        .notice strong { display: block; margin-bottom: 5px; color: var(--ink); font-family: Georgia, "Times New Roman", serif; font-size: 19px; }
+        .notice.error { border-color: #e8c8c0; color: var(--danger); }
+        .auth-panel {
+            display: none;
+            margin: 22px 0;
+            padding: 22px;
+            border: 1px solid #ead8c7;
+            border-radius: 16px;
+            background: #fffaf3;
+        }
+        .auth-panel.visible { display: block; }
+        .auth-panel h2 { margin: 0 0 6px; font-family: Georgia, "Times New Roman", serif; font-size: 21px; }
+        .auth-panel p { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
+        .auth-form { display: flex; max-width: 520px; gap: 9px; }
+        dialog {
+            width: min(460px, calc(100vw - 28px));
+            max-height: calc(100vh - 28px);
+            padding: 0;
+            overflow: auto;
+            border: 1px solid rgba(255,255,255,.75);
+            border-radius: 19px;
+            background: var(--surface);
+            color: var(--ink);
+            box-shadow: 0 24px 70px rgba(17, 40, 30, .25);
+        }
+        dialog::backdrop { background: rgba(22, 38, 31, .56); backdrop-filter: blur(4px); }
+        .dialog-inner { padding: 27px; }
+        .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 21px; }
+        .dialog-head h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 25px; }
+        .dialog-head p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+        .close-button { width: 34px; height: 34px; border: 0; border-radius: 50%; background: #f1f0e9; color: #58665e; font-size: 20px; }
+        .form-grid { display: grid; gap: 14px; }
+        .form-field { display: grid; gap: 6px; }
+        .form-field label { color: #516158; font-size: 12px; font-weight: 700; }
+        .form-field .field { width: 100%; }
+        .dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+        .toast { position: fixed; z-index: 5; right: 24px; bottom: 24px; max-width: min(400px, calc(100vw - 32px)); padding: 13px 17px; border-radius: 12px; background: var(--green-dark); color: white; box-shadow: 0 10px 28px rgba(20,40,30,.2); font-size: 13px; }
+        .toast[hidden] { display: none; }
+        :focus-visible { outline: 3px solid rgba(213, 131, 94, .55); outline-offset: 3px; }
+        @media (max-width: 760px) {
+            .shell { padding: 0 20px; }
+            main { padding-top: 20px; }
+            .hero { min-height: 0; align-items: flex-start; flex-direction: column; padding: 30px 26px; border-radius: 19px; }
+            .hero .button { align-self: flex-start; }
+            .toolbar { align-items: flex-start; flex-direction: column; margin-top: 27px; }
+            .controls { width: 100%; flex-wrap: wrap; }
+            .searchbox { flex: 1 1 180px; }
+            .searchbox input { width: 100%; }
+            .friend-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 265px), 1fr)); }
+        }
+        @media (max-width: 450px) {
+            .topbar-inner { min-height: 64px; }
+            .brand-caption { display: none; }
+            .topbar .button { min-height: 38px; padding: 0 13px; }
+            .shell { padding-right: 16px; padding-left: 16px; }
+            .hero { padding: 27px 22px; }
+            h1 { font-size: 39px; }
+            .controls > select { flex: 1 1 115px; }
+            .controls > .button { flex: 0 0 auto; }
+            .auth-form { flex-direction: column; }
+            .toast { right: 16px; bottom: 16px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="shell topbar-inner">
+            <a class="brand" href="/" aria-label="Friends home">
+                <span class="brand-mark" aria-hidden="true">f</span>
+                <span><span class="brand-name">Friends</span><span class="brand-caption">YOUR LITTLE BLACK BOOK</span></span>
+            </a>
+            <button class="button" id="addFriendButton" type="button"><span aria-hidden="true">+</span> Add a friend</button>
+        </div>
+    </header>
+
+    <main class="shell">
+        <section class="hero" aria-labelledby="pageTitle">
+            <div>
+                <p class="eyebrow">Good people, close by</p>
+                <h1 id="pageTitle">Keep your circle close.</h1>
+                <p>A simple place to keep the details of the people who make life a little brighter.</p>
+            </div>
+            <button class="button" id="heroAddButton" type="button">Add someone <span aria-hidden="true">→</span></button>
+        </section>
+
+        <section class="auth-panel" id="authPanel" aria-labelledby="authTitle">
+            <h2 id="authTitle">Sign in to your friends list</h2>
+            <p>This server requires a session. Enter a username to continue. This demo API does not use passwords.</p>
+            <form class="auth-form" id="loginForm">
+                <input class="field" id="loginUsername" name="username" autocomplete="username" placeholder="Your username" required>
+                <button class="button" type="submit">Continue</button>
+            </form>
+        </section>
+
+        <section aria-labelledby="friendsHeading">
+            <div class="toolbar">
+                <div>
+                    <h2 class="section-title" id="friendsHeading">Your people</h2>
+                    <p class="section-note">Browse, search, and keep their details up to date.</p>
+                </div>
+                <div class="controls">
+                    <div class="searchbox">
+                        <span aria-hidden="true">⌕</span>
+                        <input class="field" id="searchInput" type="search" placeholder="Search your circle" aria-label="Search friends">
+                    </div>
+                    <select id="searchType" aria-label="Search by">
+                        <option value="all">Everyone</option>
+                        <option value="lastName">Last name</option>
+                        <option value="email">Email</option>
+                    </select>
+                    <button class="button secondary" id="searchButton" type="button">Search</button>
+                    <button class="button secondary" id="sortButton" type="button" title="Sort friends by date of birth">Sort by birthday</button>
+                </div>
+            </div>
+            <p class="friend-count" id="friendCount" aria-live="polite"></p>
+            <div class="friend-grid" id="friendGrid" aria-live="polite">
+                <div class="notice"><strong>Loading your people…</strong>Just a moment.</div>
+            </div>
+        </section>
+    </main>
+
+    <dialog id="friendDialog" aria-labelledby="dialogTitle">
+        <form id="friendForm" class="dialog-inner">
+            <div class="dialog-head">
+                <div>
+                    <h2 id="dialogTitle">Add a friend</h2>
+                    <p id="dialogDescription">Add someone to your circle.</p>
+                </div>
+                <button class="close-button" id="closeDialogButton" type="button" aria-label="Close dialog">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div class="form-field" id="firstNameField">
+                    <label for="firstName">First name</label>
+                    <input class="field" id="firstName" name="firstName" autocomplete="given-name" required>
+                </div>
+                <div class="form-field" id="lastNameField">
+                    <label for="lastName">Last name</label>
+                    <input class="field" id="lastName" name="lastName" autocomplete="family-name" required>
+                </div>
+                <div class="form-field" id="emailField">
+                    <label for="email">Email address</label>
+                    <input class="field" id="email" name="email" type="email" autocomplete="email" required>
+                </div>
+                <div class="form-field">
+                    <label for="dob">Date of birth <span id="dateFormatHint">(DD-MM-YYYY)</span></label>
+                    <input class="field" id="dob" name="DOB" placeholder="e.g. 22-01-1990" pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" title="Use DD-MM-YYYY format" inputmode="numeric" required>
+                </div>
+            </div>
+            <div class="dialog-actions">
+                <button class="button secondary" id="cancelDialogButton" type="button">Cancel</button>
+                <button class="button" id="saveFriendButton" type="submit">Save friend</button>
+            </div>
+        </form>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script>
+        const grid = document.getElementById('friendGrid');
+        const dialog = document.getElementById('friendDialog');
+        const form = document.getElementById('friendForm');
+        const authPanel = document.getElementById('authPanel');
+        const friendCount = document.getElementById('friendCount');
+        const toast = document.getElementById('toast');
+        let friends = [];
+        let editingEmail = null;
+        let toastTimer;
+
+        function setNotice(title, detail, isError = false) {
+            const notice = document.createElement('div');
+            notice.className = `notice${isError ? ' error' : ''}`;
+            const heading = document.createElement('strong');
+            heading.textContent = title;
+            const message = document.createElement('span');
+            message.textContent = detail;
+            notice.append(heading, message);
+            grid.replaceChildren(notice);
+        }
+
+        function notify(message) {
+            toast.textContent = message;
+            toast.hidden = false;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.hidden = true; }, 3200);
+        }
+
+        function showAuthPanel() {
+            authPanel.classList.add('visible');
+            document.getElementById('loginUsername').focus();
+        }
+
+        async function api(url, options = {}) {
+            const response = await fetch(url, {
+                credentials: 'same-origin',
+                ...options
+            });
+            if (response.status === 403) {
+                showAuthPanel();
+                throw new Error('Please sign in to access the friends list.');
+            }
+            const contentType = response.headers.get('content-type') || '';
+            let body = contentType.includes('application/json') ? await response.json() : await response.text();
+            if (typeof body === 'string') {
+                try {
+                    body = JSON.parse(body);
+                } catch {
+                    // Some existing API endpoints return JSON with a text/html content type.
+                }
+            }
+            if (!response.ok) {
+                const message = typeof body === 'object' && body !== null ? body.message : body;
+                throw new Error(message || `Request failed (${response.status})`);
+            }
+            return body;
+        }
+
+        function normalizeList(payload) {
+            if (Array.isArray(payload)) return payload;
+            if (payload && Array.isArray(payload.users)) return payload.users;
+            return [];
+        }
+
+        function createFriendCard(friend) {
+            const card = document.createElement('article');
+            card.className = 'friend-card';
+            const top = document.createElement('div');
+            top.className = 'card-top';
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.setAttribute('aria-hidden', 'true');
+            avatar.textContent = `${friend.firstName || '?'} ${friend.lastName || ''}`.trim().split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase();
+            const identity = document.createElement('div');
+            identity.style.minWidth = '0';
+            const name = document.createElement('h3');
+            name.className = 'friend-name';
+            name.textContent = `${friend.firstName || ''} ${friend.lastName || ''}`.trim() || 'Unnamed friend';
+            const email = document.createElement('p');
+            email.className = 'friend-email';
+            email.textContent = friend.email || 'No email provided';
+            identity.append(name, email);
+            top.append(avatar, identity);
+
+            const divider = document.createElement('div');
+            divider.className = 'card-divider';
+            const label = document.createElement('div');
+            label.className = 'dob-label';
+            label.textContent = 'Date of birth';
+            const dob = document.createElement('div');
+            dob.className = 'dob';
+            dob.textContent = friend.DOB || 'Not provided';
+            const actions = document.createElement('div');
+            actions.className = 'card-actions';
+            const editButton = document.createElement('button');
+            editButton.className = 'button secondary small';
+            editButton.type = 'button';
+            editButton.textContent = 'Edit birthday';
+            editButton.addEventListener('click', () => openDialog(friend));
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'button danger small';
+            deleteButton.type = 'button';
+            deleteButton.textContent = 'Remove';
+            deleteButton.setAttribute('aria-label', `Remove ${name.textContent}`);
+            deleteButton.addEventListener('click', () => removeFriend(friend));
+            actions.append(editButton, deleteButton);
+            card.append(top, divider, label, dob, actions);
+            return card;
+        }
+
+        function renderFriends(list) {
+            friends = list;
+            friendCount.textContent = `${list.length} ${list.length === 1 ? 'friend' : 'friends'} in your circle`;
+            if (!list.length) {
+                setNotice('No friends found', 'Try another search or add someone to your circle.');
+                return;
+            }
+            grid.replaceChildren(...list.map(createFriendCard));
+        }
+
+        async function loadFriends() {
+            friendCount.textContent = '';
+            setNotice('Loading your people…', 'Just a moment.');
+            try {
+                renderFriends(normalizeList(await api('/user/')));
+            } catch (error) {
+                if (!authPanel.classList.contains('visible')) setNotice('Could not load friends', error.message, true);
+            }
+        }
+
+        async function searchFriends() {
+            const value = document.getElementById('searchInput').value.trim();
+            const type = document.getElementById('searchType').value;
+            if (!value || type === 'all') {
+                document.getElementById('searchInput').value = '';
+                await loadFriends();
+                return;
+            }
+            setNotice('Searching your circle…', 'Finding a match.');
+            try {
+                const endpoint = type === 'lastName' ? `/user/lastName/${encodeURIComponent(value)}` : `/user/${encodeURIComponent(value)}`;
+                renderFriends(normalizeList(await api(endpoint)));
+            } catch (error) {
+                if (!authPanel.classList.contains('visible')) setNotice('Search failed', error.message, true);
+            }
+        }
+
+        async function sortFriends() {
+            setNotice('Sorting birthdays…', 'Putting your circle in order.');
+            try {
+                renderFriends(normalizeList(await api('/user/sort')));
+            } catch (error) {
+                if (!authPanel.classList.contains('visible')) setNotice('Could not sort friends', error.message, true);
+            }
+        }
+
+        function openDialog(friend = null) {
+            editingEmail = friend ? friend.email : null;
+            const isEditing = Boolean(friend);
+            document.getElementById('dialogTitle').textContent = isEditing ? 'Edit birthday' : 'Add a friend';
+            document.getElementById('dialogDescription').textContent = isEditing
+                ? `Update the date of birth for ${friend.firstName} ${friend.lastName}.`
+                : 'Add someone to your circle.';
+            document.getElementById('saveFriendButton').textContent = isEditing ? 'Save birthday' : 'Save friend';
+            document.getElementById('firstNameField').hidden = isEditing;
+            document.getElementById('lastNameField').hidden = isEditing;
+            document.getElementById('emailField').hidden = isEditing;
+            for (const id of ['firstName', 'lastName', 'email', 'dob']) {
+                document.getElementById(id).value = friend?.[id === 'dob' ? 'DOB' : id] || '';
+            }
+            document.getElementById('firstName').required = !isEditing;
+            document.getElementById('lastName').required = !isEditing;
+            document.getElementById('email').required = !isEditing;
+            document.getElementById('dateFormatHint').textContent = '(DD-MM-YYYY)';
+            dialog.showModal();
+            document.getElementById(isEditing ? 'dob' : 'firstName').focus();
+        }
+
+        async function removeFriend(friend) {
+            const name = `${friend.firstName || ''} ${friend.lastName || ''}`.trim() || friend.email;
+            if (!window.confirm(`Remove ${name} from your friends list?`)) return;
+            try {
+                await api(`/user/${encodeURIComponent(friend.email)}`, { method: 'DELETE' });
+                notify(`${name} removed from your circle.`);
+                await loadFriends();
+            } catch (error) {
+                notify(error.message);
+            }
+        }
+
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const dob = document.getElementById('dob').value.trim();
+            const query = new URLSearchParams({ DOB: dob });
+            try {
+                if (editingEmail) {
+                    await api(`/user/${encodeURIComponent(editingEmail)}?${query}`, { method: 'PUT' });
+                    notify('Birthday updated.');
+                } else {
+                    const fields = {
+                        firstName: document.getElementById('firstName').value.trim(),
+                        lastName: document.getElementById('lastName').value.trim(),
+                        email: document.getElementById('email').value.trim(),
+                        DOB: dob
+                    };
+                    const params = new URLSearchParams(fields);
+                    await api(`/user/?${params}`, { method: 'POST' });
+                    notify(`${fields.firstName} added to your circle.`);
+                }
+                dialog.close();
+                await loadFriends();
+            } catch (error) {
+                notify(error.message);
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            if (!username) return;
+            try {
+                await api('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user: { username } })
+                });
+                authPanel.classList.remove('visible');
+                await loadFriends();
+            } catch (error) {
+                notify(error.message);
+            }
+        });
+
+        document.getElementById('addFriendButton').addEventListener('click', () => openDialog());
+        document.getElementById('heroAddButton').addEventListener('click', () => openDialog());
+        document.getElementById('closeDialogButton').addEventListener('click', () => dialog.close());
+        document.getElementById('cancelDialogButton').addEventListener('click', () => dialog.close());
+        document.getElementById('searchButton').addEventListener('click', searchFriends);
+        document.getElementById('sortButton').addEventListener('click', sortFriends);
+        document.getElementById('searchInput').addEventListener('keydown', event => {
+            if (event.key === 'Enter') searchFriends();
+        });
+
+        loadFriends();
+    </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const routes = require('./routes/users.js');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
@@ -12,12 +13,15 @@ app.use(express.json());
 // 2. Initialize session middleware with options
 app.use(session({ secret: "fingerprint", resave: true, saveUninitialized: true }));
 
-// 3. Root endpoint
+// 3. Serve the frontend
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 4. Root endpoint
 app.get('/', (req, res) => {
     res.send('Welcome to the Friends API with Authentication!');
 });
 
-// 4. Login endpoint - BEFORE authentication middleware
+// 5. Login endpoint - BEFORE authentication middleware
 app.post("/login", (req, res) => {
     const user = req.body.user;
     if (!user) {
@@ -35,7 +39,7 @@ app.post("/login", (req, res) => {
     return res.status(200).send("User successfully logged in");
 });
 
-// 5. Middleware for user authentication - ONLY for /user routes
+// 6. Middleware for user authentication - ONLY for /user routes
 app.use("/user", (req, res, next) => {
     // Check if user is authenticated
     if (req.session.authorization) {
@@ -56,7 +60,7 @@ app.use("/user", (req, res, next) => {
     }
 });
 
-// 6. User routes - AFTER authentication middleware
+// 7. User routes - AFTER authentication middleware
 app.use("/user", routes);
 
 // Start server

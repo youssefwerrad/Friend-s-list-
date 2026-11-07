@@ -1,11 +1,13 @@
 // Import Express and user routes, create an instance of Express
 const express = require('express');
+const path = require('path');
 const routes = require('./routes/users.js');
 const app = express();
 const PORT = 5000;
 
 // Use JSON parsing middleware and user routes
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 app.use("/user", routes);
 
 // Start the server and log a message when it's running
